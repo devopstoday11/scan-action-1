@@ -1493,7 +1493,8 @@ async function downloadGrype(version) {
   let grypePath = `${installPath}_grype/grype`;
 
   // Cache the downloaded file
-  return cache.cacheFile(grypePath, `grype`, `grype`, version);
+  cache.cacheFile(grypePath, `grype`, `grype`, version);
+  return grypePath;
 }
 
 async function installGrype(version) {
@@ -1503,8 +1504,7 @@ async function installGrype(version) {
         grypePath = await downloadGrype(version);
     }
 
-    // Add tool to path for this and future actions to use
-    core.addPath(grypePath);
+    return grypePath;
 }
 
 function sourceScheme() {
@@ -1589,7 +1589,7 @@ async function run() {
       }
 
       core.debug(`Installing grype version ${version}`);
-      await installGrype(version);
+      let grypePath = await installGrype(version);
 
       core.debug("Image: " + source);
       core.debug("Debug Output: " + debug);
@@ -1601,7 +1601,7 @@ async function run() {
 
       // Run the grype analyzer
       let cmdOutput = "";
-      let cmd = `${grypeBinary}`;
+      let cmd = `${grypePath}`;
       let cmdArgs = [`-vv`, `-o`, `json`];
       if (severityCutoff != "") {
         cmdArgs.push("--fail-on");
